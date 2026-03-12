@@ -1,0 +1,1 @@
+# reads Common.cg and PeerInfo.cfg, starts the peer process
