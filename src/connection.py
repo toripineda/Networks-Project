@@ -31,27 +31,27 @@ class ConnectionPeer:
         #We need to also map the neighbor peer id to the last known bitfield
         self.neightbor_bitfields = {}
 
-        self.host, self.port, self.has_file = self.get_my_info 
+        self.host, self.port, self.has_file = self.get_my_info()
         #need to implement get info funct
 
-        def get_my_info(self):
-            #find peers info from config
-            #expected format is peerid (host, port, has_file)
-        
-            for peer in self.peer_info:
-                if int(peer["peer_id"]==self.peer_id):
-                    return peer["host"], int(peer["port"]), int(peer["has_file"])
-                
-            raise ValueError("This peer id {self.peer_id} cant be found in config")
-        
-        #this is how we start a peer
-        #first wt listner thread thenw e want to conn to earlier peers
-        def start(self):
-            self.start_server()
+    def get_my_info(self):
+        #find peers info from config
+        #expected format is peerid (host, port, has_file)
+    
+        for peer in self.peer_info:
+            if int(peer["peer_id"]) ==self.peer_id:
+                return peer["host"], int(peer["port"]), int(peer["has_file"])
+            
+        raise ValueError("This peer id {self.peer_id} cant be found in config")
+    
+    #this is how we start a peer
+    #first wt listner thread thenw e want to conn to earlier peers
+    def start(self):
+        self.start_server()
 
-            listener_thread = threading.Thread(target=self.accept_connections, daemon=True)
-            listener_thread.start()
+        listener_thread = threading.Thread(target=self.accept_connections, daemon=True)
+        listener_thread.start()
 
-            self.connect_to_previous_peers()
-  
+        self.connect_to_previous_peers()
+
 
