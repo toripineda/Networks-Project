@@ -17,7 +17,7 @@ _bitfield = []
 _lock = threading.Lock()
 
 def init(peer_id, config):
-    global _peer_id, _file_name, _file_size, _piece_size, num_pieces, _file_path, _bitfield
+    global _peer_id, _file_name, _file_size, _piece_size, _num_pieces, _file_path, _bitfield
     
     _peer_id = peer_id
     _file_name = config['file_name']
@@ -78,6 +78,7 @@ def get_piece(index):
         f = open(_file_path, 'rb')
         try:
             f.seek(offset)
+            size = _piece_size
             data = f.read(size)
         finally:
             f.close()

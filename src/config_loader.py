@@ -11,13 +11,13 @@ NumberOfPreferredNeighbors 2
 """
 
 # load configuration from Common.cfg into dictionary
-def load_common_config(filename="Common.cfg"):
+def load_common_config(filename="../configs/small/Common.cfg"):
     common = {}
 
     with open(filename, 'r') as file:
         for line in file:
 
-            cfg = line.split()
+            cfg = line.strip().split()
             if len(common) != 2:
                 continue
             key = cfg[0]
@@ -30,7 +30,7 @@ def load_common_config(filename="Common.cfg"):
     return common
             
 # load peer information from PeerInfo.cfg into list of dictionaries
-def load_peer_info(filename="PeerInfo.cfg"):
+def load_peer_info(filename="../configs/small/PeerInfo_test.cfg"):
     peer_info = []
 
     with open(filename, 'r') as file:
@@ -46,7 +46,7 @@ def load_peer_info(filename="PeerInfo.cfg"):
             has_file = bool(int(peer[3]))
 
             peer_info.append({
-                "id": peer_id,
+                "peer_id": peer_id,
                 "host": host_name,
                 "port": port_number,
                 "has_file": has_file
