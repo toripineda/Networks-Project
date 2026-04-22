@@ -18,6 +18,12 @@ class PeerProcess:
 
         self.set_peer_info()
         # self.host, self.port, self.has_file = self.load_peer_info()
+        piece_manager.init(self.peer_id, self.has_file, self.config)
+        
+        # Initialize connections dictionary and choke manager
+        self.connections = {}
+        self.choke_manager = choke_manager.ChokeManager(self)
+        self.choke_manager.start_times() # Start the timers!
 
     # set info from config
     def set_peer_info(self):
