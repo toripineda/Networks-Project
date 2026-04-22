@@ -40,6 +40,7 @@ class ChokeManager:
                 self.interested_neighbors()
 
     # Core Algorithm: Pick the best peers to share data with
+# Core Algorithm: Pick the best peers to share data with
     def preferred_neighbors(self):
         # 1. Get a list of all connections that are currently INTERESTED in our data
         interested_conns = [c for c in self.peer_process.connections.values() if c.peer_interested]
@@ -51,11 +52,11 @@ class ChokeManager:
             best_conns = interested_conns[:self.num_preferred]
         else:
             # If we are downloading, sort by who is giving us data the fastest
-            # Note: We assume connection.py has a 'download_rate' attribute. If not, it falls back to 0.
             interested_conns.sort(key=lambda c: getattr(c, 'download_rate', 0), reverse=True)
             best_conns = interested_conns[:self.num_preferred]
 
-        new_preferred = [c.peer_id for c in best_conns]
+        # --- FIX 1: Use .remote_peer_id ---
+        new_preferred = [c.remote_peer_id for c in best_conns]
 
         # 3. Send CHOKE to peers who used to be preferred but didn't make the cut this time
         for peer_id in self.preferred_peers:
@@ -75,14 +76,16 @@ class ChokeManager:
 
     # Optimistic Algorithm: Randomly unchoke one choked peer
     def interested_neighbors(self):
-        # Find peers that are INTERESTED but currently CHOKED
+        # --- FIX 2: Use .remote_peer_id ---
         candidates = [c for c in self.peer_process.connections.values() 
-                      if c.peer_interested and c.peer_id not in self.preferred_peers]
+                      if c.peer_interested and c.remote_peer_id not in self.preferred_peers]
 
         if candidates:
             # Pick one randomly
             winner = random.choice(candidates)
-            self.optimistic_peer = winner.peer_id
+            
+            # --- FIX 3: Use .remote_peer_id ---
+            self.optimistic_peer = winner.remote_peer_id
             
             if winner.choked:
                 winner.send_unchoke()
