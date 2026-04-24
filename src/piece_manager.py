@@ -58,24 +58,9 @@ def init(peer_id, has_file, config):
     
     # calculating how many pieces fit in the file
     _num_pieces = math.ceil(_file_size / _piece_size)
-# def init(peer_id, has_file,config):
-#     global _peer_id, _file_name, _file_size, _piece_size, _num_pieces, _file_path, _bitfield
-    
-#     _peer_id = peer_id
-#     _file_name = config['file_name']
-#     _file_size = config['file_size']
-#     _piece_size = config['piece_size']
-
-#     #calculating how many pieces fit in the file
-#     _num_pieces = math.ceil(_file_size / _piece_size)
-
-#     #find if the peer starts with complete file
-#     peers = config.get('peers', {})
-#     peer_data = peers.get(peer_id, {})
-#     has_file = config.get('peers', {}).get(peer_id, {}).get('has file', False)
-
-#     #bits are true if the peer has the file, otherwise false
-#     _bitfield = [has_file] * _num_pieces
+    # bits are true if the peer has the file, otherwise false
+    global _bitfield
+    _bitfield = [has_file] * _num_pieces
 
 
 #function to check if we have a piece and return if true
