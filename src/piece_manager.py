@@ -18,23 +18,48 @@ _bitfield = []
 #lock prevents race conditions because of simultaneous threads
 _lock = threading.Lock()
 
-def init(peer_id, config):
+def init(peer_id, has_file, config):
     global _peer_id, _file_name, _file_size, _piece_size, _num_pieces, _file_path, _bitfield
     
     _peer_id = peer_id
-    _file_name = config['file_name']
-    _file_size = config['file_size']
-    _piece_size = config['piece_size']
+    
+    # Clean up the dictionary keys to prevent KeyErrors
+    clean_config = {}
+    for key, value in config.items():
+        clean_key = str(key).strip().lower()
+        clean_config[clean_key] = value
 
-    #calculating how many pieces fit in the file
+    _file_name = clean_config.get('filename')
+    _file_size = int(clean_config.get('filesize', 0))
+    _piece_size = int(clean_config.get('piecesize', 1))
+
+    if _file_name is None:
+        print("\nERROR: Could not find 'FileName' in your Common.cfg.")
+        raise ValueError("Missing file name in configuration.")
+
+    # --- THE PATH FIX ---
+    # 1. Get the folder this script is in (src/)
+    # --- THE PATH FIX ---
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Automatically create the peer_100X folder if it doesn't exist!
+    peer_dir = os.path.abspath(os.path.join(base_dir, '..', 'peers', f"peer_{_peer_id}"))
+    if not os.path.exists(peer_dir):
+        os.makedirs(peer_dir)
+        
+    _file_path = os.path.join(peer_dir, str(_file_name))
+    
+    # Auto-generate a dummy file for the seed if it is missing!
+    if has_file and not os.path.exists(_file_path):
+        print(f"\n[!] WARNING: Seed file missing. Auto-generating a {_file_size} byte dummy file for testing...")
+        with open(_file_path, 'wb') as f:
+            f.write(b'0' * _file_size)
+    # --------------------
+    
+    # calculating how many pieces fit in the file
     _num_pieces = math.ceil(_file_size / _piece_size)
-
-    #find if the peer starts with complete file
-    peers = config.get('peers', {})
-    peer_data = peers.get(peer_id, {})
-    has_file = config.get('peers', {}).get(peer_id, {}).get('has file', False)
-
-    #bits are true if the peer has the file, otherwise false
+    # bits are true if the peer has the file, otherwise false
+    global _bitfield
     _bitfield = [has_file] * _num_pieces
 
 
@@ -150,3 +175,15 @@ def parse_bitfield(data):
             bits.append(bool(bit_value))
 
     return bits[:_num_pieces]
+
+# check if the peer has downloaded the entire file
+def is_complete():
+    _lock.acquire()
+    try:
+        # If the bitfield hasn't been created yet, return False
+        if not _bitfield: 
+            return False
+        # returns True if every piece in the bitfield is True
+        return all(_bitfield)
+    finally:
+        _lock.release()

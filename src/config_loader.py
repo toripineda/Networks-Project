@@ -9,47 +9,66 @@ Common Structure:
 NumberOfPreferredNeighbors 2
 
 """
+import os
+import sys
 
-# load configuration from Common.cfg into dictionary
-def load_common_config(filename="../configs/small/Common.cfg"):
-    common = {}
-
-    with open(filename, 'r') as file:
-        for line in file:
-
-            cfg = line.strip().split()
-            if len(common) != 2:
-                continue
-            key = cfg[0]
-            value = cfg[1]
-
-            if value.isdigit():
-                value = int(value)
-            common[key] = value
+def load_common_config():
+    config = {}
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    config_dir = os.path.abspath(os.path.join(base_dir, '..', 'configs', 'small'))
     
-    return common
-            
-# load peer information from PeerInfo.cfg into list of dictionaries
-def load_peer_info(filename="../configs/small/PeerInfo_test.cfg"):
+    # Bypass Windows extensions: Find ANY file that starts with 'common'
+    actual_filename = None
+    if os.path.exists(config_dir):
+        for f in os.listdir(config_dir):
+            if f.lower().startswith('common'):
+                actual_filename = f
+                break
+
+    if not actual_filename:
+        print(f"\nCRITICAL ERROR: I looked in {config_dir} but couldn't find any file starting with 'Common'")
+        sys.exit(1)
+
+    config_path = os.path.join(config_dir, actual_filename)
+
+    with open(config_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'): continue
+            parts = line.split()
+            if len(parts) >= 2:
+                config[parts[0]] = " ".join(parts[1:])
+    return config
+
+def load_peer_info():
     peer_info = []
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    config_dir = os.path.abspath(os.path.join(base_dir, '..', 'configs', 'small'))
+    
+    # Bypass Windows extensions: Find ANY file that starts with 'peerinfo'
+    actual_filename = None
+    if os.path.exists(config_dir):
+        for f in os.listdir(config_dir):
+            if f.lower().startswith('peerinfo'):
+                actual_filename = f
+                break
 
-    with open(filename, 'r') as file:
-        for line in file:
-            peer = line.strip().split()
+    if not actual_filename:
+        print(f"\nCRITICAL ERROR: I looked in {config_dir} but couldn't find any file starting with 'PeerInfo'")
+        sys.exit(1)
 
-            if len(peer) != 4:
-                continue
+    config_path = os.path.join(config_dir, actual_filename)
 
-            peer_id = int(peer[0])
-            host_name = peer[1]
-            port_number = int(peer[2])
-            has_file = bool(int(peer[3]))
-
-            peer_info.append({
-                "peer_id": peer_id,
-                "host": host_name,
-                "port": port_number,
-                "has_file": has_file
-            })
-
+    with open(config_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'): continue
+            parts = line.split()
+            if len(parts) >= 4:
+                peer_info.append({
+                    'peer_id': int(parts[0]),
+                    'host': parts[1],
+                    'port': int(parts[2]),
+                    'has_file': parts[3] == '1'
+                })
     return peer_info
